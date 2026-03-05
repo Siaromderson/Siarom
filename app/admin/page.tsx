@@ -66,7 +66,7 @@ export default async function AdminPage() {
             <Building2 size={40} className="text-gray-200" />
             <div className="text-center">
               <p className="font-medium text-gray-500">Nenhum cliente cadastrado</p>
-              <p className="text-sm mt-1">Clique em "Novo cliente" para começar</p>
+              <p className="text-sm mt-1">Clique em &quot;Novo cliente&quot; para começar</p>
             </div>
             <Link
               href="/admin/clientes/novo"

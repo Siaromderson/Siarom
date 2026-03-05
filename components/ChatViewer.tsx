@@ -7,9 +7,10 @@ import { Bot, User, Phone, Calendar, Hash, Clock } from "lucide-react";
 
 interface ChatViewerProps {
   chat: Chat;
+  onClose?: () => void;
 }
 
-export function ChatViewer({ chat }: ChatViewerProps) {
+export function ChatViewer({ chat, onClose }: ChatViewerProps) {
   const messages = parseHistorico(chat.historico);
 
   return (

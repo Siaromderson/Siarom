@@ -46,7 +46,7 @@ export async function getSession(): Promise<AuthUser | null> {
     .single();
 
   if (!usuario) return null;
-  const u = usuario as Usuario & { "clientes-cursor": { slug: string; nome: string } | null };
+  const u = usuario as unknown as Usuario & { "clientes-cursor": { slug: string; nome: string } | null };
   const cliente = u["clientes-cursor"];
 
   return {
@@ -93,7 +93,7 @@ export async function loginCliente(email: string, password: string): Promise<{ t
     .single();
 
   if (!usuario) return null;
-  const u = usuario as Usuario & { "clientes-cursor": { slug: string; ativo: boolean } | null };
+  const u = usuario as unknown as Usuario & { "clientes-cursor": { slug: string; ativo: boolean } | null };
 
   const senhaOk = await bcrypt.compare(password, u.senha_hash);
   if (!senhaOk) return null;
