@@ -5,9 +5,11 @@ interface BarChartProps {
   height?: number;
   /** Rótulo do valor no tooltip (ex: "lead" → "3 leads", "USD" → "$12.50") */
   valueLabel?: string;
+  /** Formato do eixo X: "day" = dia/mês, "month" = mês/ano */
+  xFormat?: "day" | "month";
 }
 
-export function BarChart({ data, height = 120, valueLabel = "lead" }: BarChartProps) {
+export function BarChart({ data, height = 120, valueLabel = "lead", xFormat = "day" }: BarChartProps) {
   if (!data || data.length === 0) {
     return (
       <div className="flex items-center justify-center h-32 text-gray-400 text-sm">
@@ -17,9 +19,13 @@ export function BarChart({ data, height = 120, valueLabel = "lead" }: BarChartPr
   }
 
   const max = Math.max(...data.map((d) => d.count), 1);
-  const last7 = data.slice(-14);
+  const sliceCount = xFormat === "month" ? 12 : 14;
+  const displayData = data.slice(-sliceCount);
 
-  const formatDay = (day: string) => {
+  const formatLabel = (day: string) => {
+    if (xFormat === "month" && day.match(/^\d{4}-\d{2}$/)) {
+      return new Date(day + "-01").toLocaleDateString("pt-BR", { month: "short", year: "numeric" });
+    }
     const d = new Date(day + "T00:00:00");
     return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
   };
@@ -27,7 +33,7 @@ export function BarChart({ data, height = 120, valueLabel = "lead" }: BarChartPr
   return (
     <div className="w-full" style={{ height: height + 32 }}>
       <div className="flex items-end gap-1 h-full" style={{ height }}>
-        {last7.map((d) => {
+        {displayData.map((d) => {
           const pct = max > 0 ? (d.count / max) * 100 : 0;
           return (
             <div
@@ -46,7 +52,7 @@ export function BarChart({ data, height = 120, valueLabel = "lead" }: BarChartPr
                 />
               </div>
               <span className="text-[9px] text-gray-400 whitespace-nowrap">
-                {formatDay(d.day)}
+                {formatLabel(d.day)}
               </span>
             </div>
           );

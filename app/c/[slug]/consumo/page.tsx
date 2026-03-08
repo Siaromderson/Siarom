@@ -62,11 +62,14 @@ export default function ConsumoPage() {
   const totalUSD = apiTotalUSD + manualTotalUSD;
   const totalBRL = apiTotalBRL + manualTotalBRL;
 
-  const manualDailyData = custos.reduce<Record<string, number>>((acc, e) => {
-    acc[e.data] = (acc[e.data] ?? 0) + Number(e.valor_usd);
+  const manualMonthlyData = custos.reduce<Record<string, number>>((acc, e) => {
+    const month = e.data.substring(0, 7);
+    acc[month] = (acc[month] ?? 0) + Number(e.valor_usd);
     return acc;
   }, {});
-  const manualChartData = Object.entries(manualDailyData).map(([day, count]) => ({ day, count }));
+  const manualChartData = Object.entries(manualMonthlyData)
+    .map(([month, count]) => ({ day: month, count }))
+    .sort((a, b) => a.day.localeCompare(b.day));
 
   if (loading) {
     return (
@@ -123,10 +126,10 @@ export default function ConsumoPage() {
       <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm space-y-4">
         <div>
           <h2 className="text-base font-semibold text-gray-900">Custos cadastrados</h2>
-          <p className="text-xs text-gray-500 mt-0.5">Inseridos pelo administrador · Atualização automática a cada 5s</p>
+          <p className="text-xs text-gray-500 mt-0.5">Por mês · Inseridos pelo administrador · Atualização automática a cada 5s</p>
         </div>
 
-        {manualChartData.length > 0 && <BarChart data={manualChartData} valueLabel="USD" />}
+        {manualChartData.length > 0 && <BarChart data={manualChartData} valueLabel="USD" xFormat="month" />}
 
         {custos.length === 0 ? (
           <div className="text-center py-8 text-gray-400 text-sm">

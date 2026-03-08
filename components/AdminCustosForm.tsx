@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Loader2, DollarSign } from "lucide-react";
+import { Plus, Loader2, DollarSign, Trash2 } from "lucide-react";
 import { RefreshButton } from "@/components/RefreshButton";
+import { BarChart } from "@/components/BarChart";
 
 const REAL_TO_USD = 5.7;
 
@@ -73,8 +74,31 @@ export function AdminCustosForm({ slug }: { slug: string }) {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    if (!confirm("Excluir este custo?")) return;
+    try {
+      const res = await fetch(`/api/admin/custos?id=${id}`, { method: "DELETE" });
+      if (res.ok) await fetchCustos();
+      else {
+        const data = await res.json();
+        alert(data.error ?? "Erro ao excluir");
+      }
+    } catch {
+      alert("Erro de conexão");
+    }
+  };
+
   const totalUSD = custos.reduce((a, c) => a + Number(c.valor_usd), 0);
   const totalBRL = totalUSD * REAL_TO_USD;
+
+  const manualMonthlyData = custos.reduce<Record<string, number>>((acc, e) => {
+    const month = e.data.substring(0, 7);
+    acc[month] = (acc[month] ?? 0) + Number(e.valor_usd);
+    return acc;
+  }, {});
+  const manualChartData = Object.entries(manualMonthlyData)
+    .map(([month, count]) => ({ day: month, count }))
+    .sort((a, b) => a.day.localeCompare(b.day));
 
   if (loading) {
     return (
@@ -172,6 +196,13 @@ export function AdminCustosForm({ slug }: { slug: string }) {
         </form>
       )}
 
+      {manualChartData.length > 0 && (
+        <div>
+          <p className="text-xs text-gray-500 mb-2">Custos por mês</p>
+          <BarChart data={manualChartData} valueLabel="USD" xFormat="month" />
+        </div>
+      )}
+
       {custos.length === 0 ? (
         <p className="text-center py-6 text-gray-400 text-sm">Nenhum custo cadastrado. Insira o primeiro.</p>
       ) : (
@@ -182,6 +213,7 @@ export function AdminCustosForm({ slug }: { slug: string }) {
                 <th className="py-2 px-3 text-left text-xs font-semibold text-gray-400 uppercase">Data</th>
                 <th className="py-2 px-3 text-left text-xs font-semibold text-gray-400 uppercase">Descrição</th>
                 <th className="py-2 px-3 text-right text-xs font-semibold text-gray-400 uppercase">USD</th>
+                <th className="py-2 px-3 w-10"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -190,6 +222,16 @@ export function AdminCustosForm({ slug }: { slug: string }) {
                   <td className="py-2 px-3 text-gray-600">{new Date(c.data + "T12:00:00").toLocaleDateString("pt-BR")}</td>
                   <td className="py-2 px-3 text-gray-700">{c.descricao || "—"}</td>
                   <td className="py-2 px-3 text-right font-medium text-gray-900">${Number(c.valor_usd).toFixed(2)}</td>
+                  <td className="py-2 px-3">
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(c.id)}
+                      className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
+                      title="Excluir"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

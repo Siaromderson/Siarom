@@ -45,3 +45,21 @@ export async function POST(request: Request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true, custo });
 }
+
+/** DELETE: Admin exclui um custo de IA pelo id */
+export async function DELETE(request: Request) {
+  const session = await getSession();
+  if (!session?.isAdmin) return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
+
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "ID obrigatório" }, { status: 400 });
+
+  const { error } = await adminSupabase
+    .from("custos-ia-cursor")
+    .delete()
+    .eq("id", id);
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ ok: true });
+}
