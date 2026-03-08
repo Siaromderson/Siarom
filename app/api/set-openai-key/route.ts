@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { writeFileSync, readFileSync } from "fs";
 import { join } from "path";
+import { getSession } from "@/lib/auth";
 
 export async function POST(request: Request) {
+  const session = await getSession();
+  if (!session?.isAdmin) {
+    return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
+  }
+
   const { key } = await request.json() as { key: string };
 
   if (!key || !key.startsWith("sk-")) {

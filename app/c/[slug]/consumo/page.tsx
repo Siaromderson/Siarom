@@ -63,7 +63,7 @@ export default function ConsumoPage() {
   const totalBRL = apiTotalBRL + manualTotalBRL;
 
   const manualDailyData = custos.reduce<Record<string, number>>((acc, e) => {
-    acc[e.data] = (acc[e.data] ?? 0) + 1;
+    acc[e.data] = (acc[e.data] ?? 0) + Number(e.valor_usd);
     return acc;
   }, {});
   const manualChartData = Object.entries(manualDailyData).map(([day, count]) => ({ day, count }));
@@ -126,7 +126,7 @@ export default function ConsumoPage() {
           <p className="text-xs text-gray-500 mt-0.5">Inseridos pelo administrador · Atualização automática a cada 5s</p>
         </div>
 
-        {manualChartData.length > 0 && <BarChart data={manualChartData} />}
+        {manualChartData.length > 0 && <BarChart data={manualChartData} valueLabel="USD" />}
 
         {custos.length === 0 ? (
           <div className="text-center py-8 text-gray-400 text-sm">

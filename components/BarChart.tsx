@@ -3,9 +3,11 @@
 interface BarChartProps {
   data: Array<{ day: string; count: number }>;
   height?: number;
+  /** Rótulo do valor no tooltip (ex: "lead" → "3 leads", "USD" → "$12.50") */
+  valueLabel?: string;
 }
 
-export function BarChart({ data, height = 120 }: BarChartProps) {
+export function BarChart({ data, height = 120, valueLabel = "lead" }: BarChartProps) {
   if (!data || data.length === 0) {
     return (
       <div className="flex items-center justify-center h-32 text-gray-400 text-sm">
@@ -35,7 +37,7 @@ export function BarChart({ data, height = 120 }: BarChartProps) {
               <div className="relative w-full flex flex-col items-center justify-end h-full">
                 {/* Tooltip */}
                 <div className="absolute -top-7 left-1/2 -translate-x-1/2 hidden group-hover:flex items-center justify-center bg-gray-900 text-white text-xs rounded px-2 py-0.5 whitespace-nowrap z-10 pointer-events-none">
-                  {d.count} lead{d.count !== 1 ? "s" : ""}
+                  {valueLabel === "USD" ? `$${Number(d.count).toFixed(2)}` : `${d.count} ${valueLabel}${d.count !== 1 ? "s" : ""}`}
                 </div>
                 {/* Bar */}
                 <div

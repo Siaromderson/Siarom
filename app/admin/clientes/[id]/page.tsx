@@ -31,7 +31,21 @@ export default function EditarClientePage() {
   useEffect(() => {
     fetch(`/api/admin/clientes/${id}`)
       .then((r) => r.json())
-      .then((data: ClienteData) => { setForm(data); setLoading(false); })
+      .then((data: Record<string, unknown>) => {
+        // Extrair apenas campos do cliente (excluir usuarios-cursor e objetos aninhados)
+        const cliente: ClienteData = {
+          id: data.id as string,
+          nome: data.nome as string,
+          slug: data.slug as string,
+          supabase_url: data.supabase_url as string,
+          supabase_key: data.supabase_key as string,
+          tabela_nome: (data.tabela_nome as string) ?? "chats",
+          openai_key: (data.openai_key as string | null) ?? null,
+          ativo: (data.ativo as boolean) ?? true,
+        };
+        setForm(cliente);
+        setLoading(false);
+      })
       .catch(() => setLoading(false));
   }, [id]);
 
@@ -45,11 +59,21 @@ export default function EditarClientePage() {
     setSaving(true);
     setError(null);
 
+    // Enviar apenas campos permitidos (nunca enviar senhas ou dados sensíveis extras)
+    const payload = {
+      nome: form.nome,
+      supabase_url: form.supabase_url,
+      supabase_key: form.supabase_key,
+      tabela_nome: form.tabela_nome,
+      openai_key: form.openai_key,
+      ativo: form.ativo,
+    };
+
     try {
       const res = await fetch(`/api/admin/clientes/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       const data = await res.json() as { ok?: boolean; error?: string };
       if (data.ok) {
